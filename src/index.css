@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    font-family: 'Tajawal', sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --brand-ink: 16 20 18;
+    --brand-sand: 245 235 221;
+    --brand-gold: 217 176 97;
+    --brand-gold-soft: 228 193 126;
+    --brand-clay: 188 107 78;
+    --brand-olive: 86 102 73;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-brand-ink text-brand-sand;
+    background-image:
+      radial-gradient(circle at top left, rgba(188, 107, 78, 0.16), transparent 32%),
+      radial-gradient(circle at top right, rgba(217, 176, 97, 0.18), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 35%);
+  }
+
+  img {
+    display: block;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Aref Ruqaa Ink', serif;
+  }
+}

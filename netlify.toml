@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "api"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/orders"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/success"
+  to = "/index.html"
+  status = 200
