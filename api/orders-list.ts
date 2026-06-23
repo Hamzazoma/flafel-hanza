@@ -1,6 +1,6 @@
 import type { Handler } from '@netlify/functions'
 
-import { buildResponse, handleOptionsRequest, listOrders, requireAdminKey } from './_lib/orders'
+import { buildResponse, handleOptionsRequest, initializeBlobs, listOrders, requireAdminKey } from './_lib/orders'
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -15,6 +15,7 @@ export const handler: Handler = async (event) => {
     return buildResponse(401, { error: 'رمز دخول الإدارة غير صحيح' })
   }
 
+  initializeBlobs(event)
   const orders = await listOrders()
   return buildResponse(200, { orders })
 }

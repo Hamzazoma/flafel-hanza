@@ -4,6 +4,7 @@ import {
   buildResponse,
   createOrder,
   handleOptionsRequest,
+  initializeBlobs,
   saveOrder,
   validateIncomingOrder,
   type IncomingOrderPayload,
@@ -42,6 +43,7 @@ export const handler: Handler = async (event) => {
     selectedItems: payload.selectedItems ?? {},
   }
 
+  initializeBlobs(event)
   const order = await saveOrder(createOrder(orderPayload))
   return buildResponse(200, { order })
 }

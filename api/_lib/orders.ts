@@ -1,4 +1,5 @@
-import { getStore } from '@netlify/blobs'
+import { connectLambda, getStore } from '@netlify/blobs'
+import type { HandlerEvent } from '@netlify/functions'
 
 import { menuItems, type ServiceType } from '../../src/data/shop'
 
@@ -32,6 +33,10 @@ const menuItemMap = new Map(menuItems.map((item) => [item.id, item]))
 
 function getOrderStore() {
   return getStore('falafel-orders')
+}
+
+export function initializeBlobs(event: HandlerEvent) {
+  connectLambda(event as any)
 }
 
 export const jsonHeaders = {

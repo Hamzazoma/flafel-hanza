@@ -1,6 +1,6 @@
 import type { Handler } from '@netlify/functions'
 
-import { buildResponse, handleOptionsRequest, requireAdminKey, updateOrderStatus, type OrderStatus } from './_lib/orders'
+import { buildResponse, handleOptionsRequest, initializeBlobs, requireAdminKey, updateOrderStatus, type OrderStatus } from './_lib/orders'
 
 const allowedStatuses: OrderStatus[] = ['new', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled']
 
@@ -39,6 +39,7 @@ export const handler: Handler = async (event) => {
     return buildResponse(400, { error: 'حالة الطلب غير صحيحة' })
   }
 
+  initializeBlobs(event)
   const order = await updateOrderStatus(payload.orderId, payload.status)
 
   if (!order) {
