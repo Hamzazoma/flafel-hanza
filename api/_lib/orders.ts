@@ -30,7 +30,9 @@ export type IncomingOrderPayload = {
 
 const menuItemMap = new Map(menuItems.map((item) => [item.id, item]))
 
-export const orderStore = getStore('falafel-orders')
+function getOrderStore() {
+  return getStore('falafel-orders')
+}
 
 export const jsonHeaders = {
   'Content-Type': 'application/json',
@@ -131,11 +133,13 @@ export function createOrder(payload: IncomingOrderPayload): StoredOrder {
 }
 
 export async function saveOrder(order: StoredOrder) {
+  const orderStore = getOrderStore()
   await orderStore.setJSON(`order:${order.id}`, order)
   return order
 }
 
 export async function listOrders() {
+  const orderStore = getOrderStore()
   const { blobs } = await orderStore.list({ prefix: 'order:' })
   const orders = await Promise.all(
     blobs.map(async (blob) => orderStore.get(blob.key, { type: 'json' as const }) as Promise<StoredOrder | null>),
@@ -147,6 +151,7 @@ export async function listOrders() {
 }
 
 export async function getOrder(orderId: string) {
+  const orderStore = getOrderStore()
   return (await orderStore.get(`order:${orderId}`, { type: 'json' })) as StoredOrder | null
 }
 
