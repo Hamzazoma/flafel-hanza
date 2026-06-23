@@ -50,6 +50,7 @@ export default function AdminApp() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [apiError, setApiError] = useState('')
+  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true)
   const [accessKey, setAccessKey] = useState('')
   const [draftAccessKey, setDraftAccessKey] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
@@ -99,13 +100,15 @@ export default function AdminApp() {
     }
 
     loadOrders()
-    const intervalId = window.setInterval(() => loadOrders(true), 15000)
+    const intervalId = isAutoRefreshEnabled ? window.setInterval(() => loadOrders(true), 5000) : null
 
     return () => {
       active = false
-      window.clearInterval(intervalId)
+      if (intervalId !== null) {
+        window.clearInterval(intervalId)
+      }
     }
-  }, [accessKey])
+  }, [accessKey, isAutoRefreshEnabled])
 
   const summaryCards = useMemo(() => {
     const activeOrders = orders.filter((order) => !['completed', 'cancelled'].includes(order.status))
@@ -248,7 +251,15 @@ export default function AdminApp() {
                   {isRefreshing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                   تحديث
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAutoRefreshEnabled((value) => !value)}
+                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-brand-sand transition hover:border-brand-gold/30 hover:bg-brand-gold/10"
+                >
+                  {isAutoRefreshEnabled ? 'إيقاف التحديث التلقائي' : 'تشغيل التحديث التلقائي'}
+                </button>
               </div>
+              <p>{isAutoRefreshEnabled ? 'التحديث التلقائي يعمل كل 5 ثوانٍ.' : 'التحديث التلقائي متوقف حاليًا.'}</p>
               <p>إذا نشرت لوحة الإدارة على موقع Netlify مختلف، اضبط `VITE_API_BASE_URL` ليشير إلى موقع العميل الأساسي.</p>
             </div>
           </div>
@@ -343,7 +354,7 @@ export default function AdminApp() {
           <SectionTitle
             eyebrow="الطلبات"
             title="قائمة الطلبات المباشرة"
-            description="تُحدَّث تلقائيًا كل 15 ثانية، ويمكنك أيضًا التحديث يدويًا."
+            description="يمكنك تشغيل التحديث التلقائي كل 5 ثوانٍ أو إيقافه، مع إمكانية التحديث اليدوي في أي وقت."
           />
 
           {apiError ? (
