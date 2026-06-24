@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   CircleAlert,
   Clock3,
@@ -45,54 +45,14 @@ function formatDateTime(value: string) {
   }).format(new Date(value))
 }
 
-function playNewOrderTone() {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-  if (!AudioContextClass) {
-    return
-  }
-
-  try {
-    const audioContext = new AudioContextClass()
-    const oscillator = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime)
-    oscillator.frequency.setValueAtTime(1174, audioContext.currentTime + 0.12)
-
-    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.02)
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.35)
-
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-
-    oscillator.start(audioContext.currentTime)
-    oscillator.stop(audioContext.currentTime + 0.36)
-
-    window.setTimeout(() => {
-      void audioContext.close().catch(() => undefined)
-    }, 500)
-  } catch {
-    // Ignore audio playback failures if the browser blocks autoplay.
-  }
-}
-
 export default function AdminApp() {
   const [orders, setOrders] = useState<SubmittedOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [apiError, setApiError] = useState('')
-  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true)
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<string>('')
   const [accessKey, setAccessKey] = useState('')
   const [draftAccessKey, setDraftAccessKey] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
-  const previousOrderCountRef = useRef<number | null>(null)
 
   useEffect(() => {
     document.documentElement.lang = 'ar'
@@ -120,14 +80,7 @@ export default function AdminApp() {
           return
         }
 
-        const previousOrderCount = previousOrderCountRef.current
-        if (previousOrderCount !== null && nextOrders.length > previousOrderCount) {
-          playNewOrderTone()
-        }
-
-        previousOrderCountRef.current = nextOrders.length
         setOrders(nextOrders)
-        setLastUpdatedAt(new Date().toISOString())
         setApiError('')
       } catch (error) {
         if (!active) {
@@ -146,15 +99,13 @@ export default function AdminApp() {
     }
 
     loadOrders()
-    const intervalId = isAutoRefreshEnabled ? window.setInterval(() => loadOrders(true), 5000) : null
+    const intervalId = window.setInterval(() => loadOrders(true), 10000)
 
     return () => {
       active = false
-      if (intervalId !== null) {
-        window.clearInterval(intervalId)
-      }
+      window.clearInterval(intervalId)
     }
-  }, [accessKey, isAutoRefreshEnabled])
+  }, [accessKey])
 
   const summaryCards = useMemo(() => {
     const activeOrders = orders.filter((order) => !['completed', 'cancelled'].includes(order.status))
@@ -218,14 +169,7 @@ export default function AdminApp() {
     setIsRefreshing(true)
     try {
       const nextOrders = await fetchAdminOrders(accessKey)
-      const previousOrderCount = previousOrderCountRef.current
-      if (previousOrderCount !== null && nextOrders.length > previousOrderCount) {
-        playNewOrderTone()
-      }
-
-      previousOrderCountRef.current = nextOrders.length
       setOrders(nextOrders)
-      setLastUpdatedAt(new Date().toISOString())
       setApiError('')
     } catch (error) {
       setApiError(error instanceof Error ? error.message : 'تعذر تحديث الطلبات')
@@ -304,16 +248,7 @@ export default function AdminApp() {
                   {isRefreshing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                   تحديث
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setIsAutoRefreshEnabled((value) => !value)}
-                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-brand-sand transition hover:border-brand-gold/30 hover:bg-brand-gold/10"
-                >
-                  {isAutoRefreshEnabled ? 'إيقاف التحديث التلقائي' : 'تشغيل التحديث التلقائي'}
-                </button>
               </div>
-              <p>{isAutoRefreshEnabled ? 'التحديث التلقائي يعمل كل 5 ثوانٍ.' : 'التحديث التلقائي متوقف حاليًا.'}</p>
-              <p>{lastUpdatedAt ? `آخر تحديث: ${formatDateTime(lastUpdatedAt)}` : 'آخر تحديث: لم يتم التحديث بعد.'}</p>
               <p>إذا نشرت لوحة الإدارة على موقع Netlify مختلف، اضبط `VITE_API_BASE_URL` ليشير إلى موقع العميل الأساسي.</p>
             </div>
           </div>
@@ -408,7 +343,7 @@ export default function AdminApp() {
           <SectionTitle
             eyebrow="الطلبات"
             title="قائمة الطلبات المباشرة"
-            description="يمكنك تشغيل التحديث التلقائي كل 5 ثوانٍ أو إيقافه، مع إمكانية التحديث اليدوي في أي وقت."
+            description="تُحدَّث تلقائيًا كل 10 ثوانٍ، ويمكنك أيضًا التحديث يدويًا."
           />
 
           {apiError ? (
