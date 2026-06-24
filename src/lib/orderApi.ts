@@ -14,12 +14,35 @@ export type SubmitOrderPayload = {
 const ADMIN_KEY_STORAGE = 'falafel-admin-access-key'
 
 function getApiBaseUrl() {
-  const value = import.meta.env.VITE_API_BASE_URL?.trim()
-  return value ? value.replace(/\/$/, '') : ''
+  const rawValue = import.meta.env.VITE_API_BASE_URL?.trim()
+  if (!rawValue) {
+    return ''
+  }
+
+  const cleanedValue = rawValue.replace(/^[`'"]+|[`'"]+$/g, '').trim()
+  if (!cleanedValue) {
+    return ''
+  }
+
+  const normalizedValue = /^https?:\/\//i.test(cleanedValue) ? cleanedValue : `https://${cleanedValue}`
+
+  try {
+    return new URL(normalizedValue).toString().replace(/\/$/, '')
+  } catch {
+    return normalizedValue.replace(/\/$/, '')
+  }
 }
 
 function buildApiUrl(path: string) {
   return `${getApiBaseUrl()}${path}`
+}
+
+async function performApiRequest(input: string, init?: RequestInit) {
+  try {
+    return await fetch(input, init)
+  } catch {
+    throw new Error('تعذر الوصول إلى API. تأكد من رابط VITE_API_BASE_URL وإعادة نشر الموقعين.')
+  }
 }
 
 async function parseJsonResponse<T>(response: Response): Promise<T> {
@@ -33,7 +56,7 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 }
 
 export async function submitRemoteOrder(payload: SubmitOrderPayload) {
-  const response = await fetch(buildApiUrl('/.netlify/functions/orders-submit'), {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/orders-submit'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,7 +69,7 @@ export async function submitRemoteOrder(payload: SubmitOrderPayload) {
 }
 
 export async function fetchAdminOrders(adminKey?: string) {
-  const response = await fetch(buildApiUrl('/.netlify/functions/orders-list'), {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/orders-list'), {
     headers: adminKey
       ? {
           'x-admin-key': adminKey,
@@ -59,7 +82,7 @@ export async function fetchAdminOrders(adminKey?: string) {
 }
 
 export async function updateRemoteOrderStatus(orderId: string, status: OrderStatus, adminKey?: string) {
-  const response = await fetch(buildApiUrl('/.netlify/functions/orders-update'), {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/orders-update'), {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
