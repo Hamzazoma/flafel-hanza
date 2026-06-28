@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Clock3, MapPinned, Phone, UserRound } from 'lucide-react'
+import { Clock3, LocateFixed, MapPinned, Phone, UserRound } from 'lucide-react'
 
 import type { Locale, ServiceType } from '@/data/shop'
 import type { OrderValidationErrors } from '@/utils/order'
@@ -10,13 +10,18 @@ type OrderFormCardProps = {
   customerName: string
   phone: string
   address: string
+  addressMode: 'manual' | 'auto'
   pickupTime: string
   notes: string
   errors: OrderValidationErrors
   submitError?: string
   isSubmitting?: boolean
+  isDetectingLocation?: boolean
+  locationError?: string
   onFieldChange: (field: 'customerName' | 'phone' | 'address' | 'pickupTime' | 'notes', value: string) => void
   onServiceTypeChange: (value: ServiceType) => void
+  onAddressModeChange: (value: 'manual' | 'auto') => void
+  onDetectLocation: () => void
   onSubmit: () => void
 }
 
@@ -29,6 +34,13 @@ const copy = {
     name: 'الاسم',
     phone: 'رقم الجوال',
     address: 'العنوان',
+    locationMethod: 'طريقة تحديد الموقع',
+    manualAddress: 'إدخال يدوي',
+    autoAddress: 'تحديد تلقائي',
+    detectLocation: 'تحديد موقعي الآن',
+    detectingLocation: 'جارٍ تحديد الموقع...',
+    autoLocationHelp: 'سيتم استخدام موقعك الحالي وكتابته داخل خانة العنوان.',
+    autoLocationPlaceholder: 'سيظهر العنوان أو رابط الموقع هنا بعد التحديد التلقائي',
     pickupTime: 'وقت الاستلام أو التوصيل',
     notes: 'ملاحظات إضافية',
     notesPlaceholder: 'مثلا: بدون مخلل أو اتصل عند الوصول',
@@ -42,6 +54,13 @@ const copy = {
     name: 'Name',
     phone: 'Phone number',
     address: 'Address',
+    locationMethod: 'Location method',
+    manualAddress: 'Manual entry',
+    autoAddress: 'Auto detect',
+    detectLocation: 'Detect my location',
+    detectingLocation: 'Detecting location...',
+    autoLocationHelp: 'We will use your current device location and fill it into the address field.',
+    autoLocationPlaceholder: 'Your detected location or map link will appear here',
     pickupTime: 'Pickup or delivery time',
     notes: 'Extra notes',
     notesPlaceholder: 'Example: no pickles or call on arrival',
@@ -55,13 +74,18 @@ export default function OrderFormCard({
   customerName,
   phone,
   address,
+  addressMode,
   pickupTime,
   notes,
   errors,
   submitError,
   isSubmitting = false,
+  isDetectingLocation = false,
+  locationError,
   onFieldChange,
   onServiceTypeChange,
+  onAddressModeChange,
+  onDetectLocation,
   onSubmit,
 }: OrderFormCardProps) {
   const text = copy[locale]
@@ -109,13 +133,59 @@ export default function OrderFormCard({
         />
 
         {serviceType === 'delivery' ? (
-          <Field
-            icon={<MapPinned className="h-4 w-4" />}
-            label={text.address}
-            value={address}
-            error={errors.address}
-            onChange={(value) => onFieldChange('address', value)}
-          />
+          <div className="grid gap-3">
+            <div>
+              <p className="mb-3 text-sm font-semibold text-brand-sand">{text.locationMethod}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <ServiceButton
+                  active={addressMode === 'manual'}
+                  label={text.manualAddress}
+                  onClick={() => onAddressModeChange('manual')}
+                />
+                <ServiceButton
+                  active={addressMode === 'auto'}
+                  label={text.autoAddress}
+                  onClick={() => onAddressModeChange('auto')}
+                />
+              </div>
+            </div>
+
+            {addressMode === 'manual' ? (
+              <Field
+                icon={<MapPinned className="h-4 w-4" />}
+                label={text.address}
+                value={address}
+                error={errors.address}
+                onChange={(value) => onFieldChange('address', value)}
+              />
+            ) : (
+              <div className="grid gap-2 text-sm font-semibold text-brand-sand">
+                {text.address}
+                <div className="rounded-[22px] border border-white/10 bg-black/20 p-4">
+                  <button
+                    type="button"
+                    onClick={onDetectLocation}
+                    disabled={isDetectingLocation}
+                    className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-4 py-2 text-sm font-bold text-brand-ink transition hover:bg-brand-gold-soft disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <LocateFixed className="h-4 w-4" />
+                    {isDetectingLocation ? text.detectingLocation : text.detectLocation}
+                  </button>
+                  <p className="mt-3 text-xs font-normal leading-6 text-brand-sand/65">{text.autoLocationHelp}</p>
+                  <div className="mt-3 flex items-start gap-3 rounded-[18px] border border-white/10 bg-white/5 px-4 py-3">
+                    <span className="pt-0.5 text-brand-gold">
+                      <MapPinned className="h-4 w-4" />
+                    </span>
+                    <p className="text-sm font-normal text-brand-sand/85">
+                      {address || text.autoLocationPlaceholder}
+                    </p>
+                  </div>
+                </div>
+                {errors.address ? <span className="text-xs text-brand-clay">{errors.address}</span> : null}
+                {locationError ? <span className="text-xs text-brand-clay">{locationError}</span> : null}
+              </div>
+            )}
+          </div>
         ) : null}
 
         <Field

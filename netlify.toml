@@ -6,6 +6,9 @@
   directory = "api"
   node_bundler = "esbuild"
 
+[functions."orders-auto-clear"]
+  schedule = "@hourly"
+
 [[redirects]]
   from = "/orders"
   to = "/index.html"

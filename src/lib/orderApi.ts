@@ -11,6 +11,13 @@ export type SubmitOrderPayload = {
   selectedItems: Record<string, number>
 }
 
+export type MenuAvailabilityMap = Record<string, boolean>
+
+export type AdminSettings = {
+  autoClearEnabled: boolean
+  lastClearedAt: string | null
+}
+
 const ADMIN_KEY_STORAGE = 'falafel-admin-access-key'
 
 function getApiBaseUrl() {
@@ -96,6 +103,70 @@ export async function updateRemoteOrderStatus(orderId: string, status: OrderStat
 
   const data = await parseJsonResponse<{ order: SubmittedOrder }>(response)
   return data.order
+}
+
+export async function fetchMenuAvailability() {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/menu-availability'))
+  const data = await parseJsonResponse<{ availability: MenuAvailabilityMap }>(response)
+  return data.availability
+}
+
+export async function updateMenuAvailability(availability: MenuAvailabilityMap, adminKey?: string) {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/menu-availability'), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(adminKey ? { 'x-admin-key': adminKey } : {}),
+    },
+    body: JSON.stringify({
+      availability,
+    }),
+  })
+
+  const data = await parseJsonResponse<{ availability: MenuAvailabilityMap }>(response)
+  return data.availability
+}
+
+export async function fetchAdminSettings(adminKey?: string) {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/admin-settings'), {
+    headers: adminKey
+      ? {
+          'x-admin-key': adminKey,
+        }
+      : undefined,
+  })
+
+  const data = await parseJsonResponse<{ settings: AdminSettings }>(response)
+  return data.settings
+}
+
+export async function updateAdminSettings(autoClearEnabled: boolean, adminKey?: string) {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/admin-settings'), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(adminKey ? { 'x-admin-key': adminKey } : {}),
+    },
+    body: JSON.stringify({
+      autoClearEnabled,
+    }),
+  })
+
+  const data = await parseJsonResponse<{ settings: AdminSettings }>(response)
+  return data.settings
+}
+
+export async function clearRemoteOrders(adminKey?: string) {
+  const response = await performApiRequest(buildApiUrl('/.netlify/functions/orders-clear'), {
+    method: 'DELETE',
+    headers: adminKey
+      ? {
+          'x-admin-key': adminKey,
+        }
+      : undefined,
+  })
+
+  return parseJsonResponse<{ deletedCount: number; clearedAt: string }>(response)
 }
 
 export function readSavedAdminKey() {

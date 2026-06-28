@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
     font-family: 'Tajawal', sans-serif;
     line-height: 1.5;
     font-weight: 400;
@@ -14,6 +14,16 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --brand-ink: 250 246 239;
+    --brand-sand: 35 28 22;
+    --brand-gold: 185 141 59;
+    --brand-gold-soft: 209 169 94;
+    --brand-clay: 164 93 68;
+    --brand-olive: 76 99 74;
+  }
+
+  html.dark {
+    color-scheme: dark;
     --brand-ink: 16 20 18;
     --brand-sand: 245 235 221;
     --brand-gold: 217 176 97;

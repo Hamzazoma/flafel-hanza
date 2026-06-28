@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Clock3 } from 'lucide-react'
 
 import OrderBuilder from '@/components/OrderBuilder'
 import OrderFormCard from '@/components/OrderFormCard'
 import OrderSummaryCard from '@/components/OrderSummaryCard'
-import { orderImageUrl, siteContent, type MenuCategory } from '@/data/shop'
-import { submitRemoteOrder } from '@/lib/orderApi'
+import { defaultMenuAvailabilityMap, orderImageUrl, siteContent, type MenuCategory } from '@/data/shop'
+import { fetchMenuAvailability, submitRemoteOrder, type MenuAvailabilityMap } from '@/lib/orderApi'
 import { useShopStore } from '@/store/useShopStore'
 import { calculateTotal, validateOrder, type OrderValidationErrors } from '@/utils/order'
 
@@ -28,9 +28,76 @@ export default function Orders() {
   const [errors, setErrors] = useState<OrderValidationErrors>({})
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [availabilityMap, setAvailabilityMap] = useState<MenuAvailabilityMap>(defaultMenuAvailabilityMap)
+  const [addressMode, setAddressMode] = useState<'manual' | 'auto'>('manual')
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
+  const [locationError, setLocationError] = useState('')
   const isArabic = locale === 'ar'
 
-  const totalPrice = useMemo(() => calculateTotal(selectedItems), [selectedItems])
+  useEffect(() => {
+    let active = true
+
+    fetchMenuAvailability()
+      .then((nextAvailabilityMap) => {
+        if (active) {
+          setAvailabilityMap(nextAvailabilityMap)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    Object.entries(selectedItems).forEach(([itemId, quantity]) => {
+      if (quantity > 0 && availabilityMap[itemId] === false) {
+        setQuantity(itemId, 0)
+      }
+    })
+  }, [availabilityMap, selectedItems, setQuantity])
+
+  const availableSelectedItems = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(selectedItems).filter(([itemId, quantity]) => quantity > 0 && availabilityMap[itemId] !== false),
+      ),
+    [availabilityMap, selectedItems],
+  )
+
+  const totalPrice = useMemo(() => calculateTotal(availableSelectedItems), [availableSelectedItems])
+
+  const handleDetectLocation = () => {
+    setLocationError('')
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setLocationError(isArabic ? 'هذا المتصفح لا يدعم تحديد الموقع.' : 'This browser does not support geolocation.')
+      return
+    }
+
+    setIsDetectingLocation(true)
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const locationValue = isArabic
+          ? `موقعي الحالي: https://maps.google.com/?q=${latitude},${longitude}`
+          : `My current location: https://maps.google.com/?q=${latitude},${longitude}`
+
+        updateField('address', locationValue)
+        setIsDetectingLocation(false)
+      },
+      () => {
+        setLocationError(isArabic ? 'تعذر الوصول إلى موقعك الحالي. فعّل إذن الموقع أو اختر الإدخال اليدوي.' : 'Unable to access your location. Enable location permission or switch to manual entry.')
+        setIsDetectingLocation(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      },
+    )
+  }
 
   const handleSubmit = async () => {
     const nextErrors = validateOrder(
@@ -42,7 +109,7 @@ export default function Orders() {
         notes,
         serviceType,
       },
-      selectedItems,
+      availableSelectedItems,
     )
 
     setErrors(nextErrors)
@@ -62,7 +129,7 @@ export default function Orders() {
         pickupTime,
         notes,
         serviceType,
-        selectedItems,
+        selectedItems: availableSelectedItems,
       })
 
       completeSubmittedOrder(order)
@@ -119,7 +186,8 @@ export default function Orders() {
         <OrderBuilder
           activeCategory={activeCategory}
           locale={locale}
-          selectedItems={selectedItems}
+          selectedItems={availableSelectedItems}
+          availabilityMap={availabilityMap}
           onSelectCategory={setActiveCategory}
           onUpdateQuantity={setQuantity}
         />
@@ -127,7 +195,7 @@ export default function Orders() {
         <div className="grid gap-6 xl:sticky xl:top-28 xl:self-start">
           <OrderSummaryCard
             locale={locale}
-            selectedItems={selectedItems}
+            selectedItems={availableSelectedItems}
             serviceType={serviceType}
             pickupTime={pickupTime}
             totalPrice={totalPrice}
@@ -139,13 +207,26 @@ export default function Orders() {
             customerName={customerName}
             phone={phone}
             address={address}
+            addressMode={addressMode}
             pickupTime={pickupTime}
             notes={notes}
             errors={errors}
             submitError={submitError}
             isSubmitting={isSubmitting}
+            isDetectingLocation={isDetectingLocation}
+            locationError={locationError}
             onFieldChange={updateField}
-            onServiceTypeChange={setServiceType}
+            onServiceTypeChange={(value) => {
+              setServiceType(value)
+              if (value === 'pickup') {
+                setLocationError('')
+              }
+            }}
+            onAddressModeChange={(value) => {
+              setAddressMode(value)
+              setLocationError('')
+            }}
+            onDetectLocation={handleDetectLocation}
             onSubmit={handleSubmit}
           />
         </div>

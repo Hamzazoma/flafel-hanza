@@ -1,13 +1,19 @@
 import type { Handler } from '@netlify/functions'
 
-import { buildResponse, clearOrdersIfAutoClearDue, handleOptionsRequest, initializeBlobs, listOrders, requireAdminKey } from './_lib/orders'
+import {
+  buildResponse,
+  clearAllOrders,
+  handleOptionsRequest,
+  initializeBlobs,
+  requireAdminKey,
+} from './_lib/orders'
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return handleOptionsRequest()
   }
 
-  if (event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'DELETE') {
     return buildResponse(405, { error: 'Method not allowed' })
   }
 
@@ -16,7 +22,6 @@ export const handler: Handler = async (event) => {
   }
 
   initializeBlobs(event)
-  await clearOrdersIfAutoClearDue()
-  const orders = await listOrders()
-  return buildResponse(200, { orders })
+  const result = await clearAllOrders()
+  return buildResponse(200, result)
 }

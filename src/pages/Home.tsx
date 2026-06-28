@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -23,7 +23,9 @@ import {
   siteContent,
   stats,
   type MenuCategory,
+  defaultMenuAvailabilityMap,
 } from '@/data/shop'
+import { fetchMenuAvailability, type MenuAvailabilityMap } from '@/lib/orderApi'
 import { useShopStore } from '@/store/useShopStore'
 
 const categoryIntro = {
@@ -35,14 +37,53 @@ export default function Home() {
   const locale = useShopStore((state) => state.locale)
   const isArabic = locale === 'ar'
   const [activeCategory, setActiveCategory] = useState<MenuCategory>('sandwiches')
+  const [availabilityMap, setAvailabilityMap] = useState<MenuAvailabilityMap>(defaultMenuAvailabilityMap)
 
   const filteredItems = useMemo(
     () => menuItems.filter((item) => item.category === activeCategory),
     [activeCategory],
   )
 
+  useEffect(() => {
+    let active = true
+
+    fetchMenuAvailability()
+      .then((nextAvailabilityMap) => {
+        if (active) {
+          setAvailabilityMap(nextAvailabilityMap)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <div className="pb-16">
+      <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 rounded-[30px] border border-brand-gold/20 bg-gradient-to-l from-brand-gold/14 via-brand-clay/8 to-transparent px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-gold/80">
+              {isArabic ? 'ابدأ بسرعة' : 'Quick start'}
+            </p>
+            <p className="mt-2 text-sm text-brand-sand/75">
+              {isArabic
+                ? 'زر الطلب السريع الآن ظاهر أعلى الصفحة لتصل مباشرة إلى موقع الطلبات.'
+                : 'The quick order button is now pinned at the top so customers can reach the order flow immediately.'}
+            </p>
+          </div>
+          <Link
+            to="/orders"
+            className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-brand-ink transition hover:bg-brand-gold-soft sm:self-auto"
+          >
+            {isArabic ? 'اطلب الآن' : 'Order now'}
+            <ArrowLeft className={`h-4 w-4 ${isArabic ? '' : 'rotate-180'}`} />
+          </Link>
+        </div>
+      </section>
+
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8 lg:py-12">
         <div className="overflow-hidden rounded-[40px] border border-white/10 bg-white/5 p-8 shadow-[0_32px_120px_rgba(7,10,13,0.3)] sm:p-10">
           <div className="mb-6 flex flex-wrap gap-3">
@@ -71,7 +112,7 @@ export default function Home() {
               to="/orders"
               className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-brand-ink transition hover:bg-brand-gold-soft"
             >
-              {isArabic ? 'اذهب إلى صندوق الطلبات' : 'Go to the order desk'}
+              {isArabic ? 'اطلب الآن' : 'Order now'}
               <ArrowLeft className={`h-4 w-4 ${isArabic ? '' : 'rotate-180'}`} />
             </Link>
             <a
@@ -138,7 +179,7 @@ export default function Home() {
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filteredItems.map((item) => (
-            <MenuItemCard key={item.id} item={item} locale={locale} />
+            <MenuItemCard key={item.id} item={item} locale={locale} isAvailable={availabilityMap[item.id] !== false} />
           ))}
         </div>
       </section>

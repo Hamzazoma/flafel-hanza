@@ -91,6 +91,8 @@ export const menuItems: MenuItem[] = [
   { id: 'drink-karak', category: 'drinks', name: { ar: 'كرك', en: 'Karak' }, price: 3, popular: true },
 ]
 
+export const defaultMenuAvailabilityMap = Object.fromEntries(menuItems.map((item) => [item.id, true])) as Record<string, boolean>
+
 export const audienceHighlights = [
   { ar: 'مناسب للدخول بالكراسي المتحركة', en: 'Wheelchair-accessible entrance' },
   { ar: 'توصيل بدون تلامس', en: 'No-contact delivery' },

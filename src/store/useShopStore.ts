@@ -51,7 +51,7 @@ const initialOrderState = {
 
 export const useShopStore = create<ShopState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       locale: 'ar',
       lastSubmittedOrder: null,
       ...initialOrderState,

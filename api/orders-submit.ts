@@ -1,8 +1,12 @@
 import type { Handler } from '@netlify/functions'
 
 import {
+  buildUnavailableItemsMessage,
   buildResponse,
+  clearOrdersIfAutoClearDue,
   createOrder,
+  getMenuAvailabilityMap,
+  getUnavailableSelectedItemIds,
   handleOptionsRequest,
   initializeBlobs,
   saveOrder,
@@ -33,6 +37,16 @@ export const handler: Handler = async (event) => {
     return buildResponse(400, { error: validationError })
   }
 
+  initializeBlobs(event)
+  await clearOrdersIfAutoClearDue()
+
+  const availabilityMap = await getMenuAvailabilityMap()
+  const unavailableItemIds = getUnavailableSelectedItemIds(payload.selectedItems ?? {}, availabilityMap)
+
+  if (unavailableItemIds.length > 0) {
+    return buildResponse(400, { error: buildUnavailableItemsMessage(unavailableItemIds) })
+  }
+
   const orderPayload: IncomingOrderPayload = {
     customerName: payload.customerName?.trim() ?? '',
     phone: payload.phone?.trim() ?? '',
@@ -43,7 +57,6 @@ export const handler: Handler = async (event) => {
     selectedItems: payload.selectedItems ?? {},
   }
 
-  initializeBlobs(event)
   const order = await saveOrder(createOrder(orderPayload))
   return buildResponse(200, { order })
 }

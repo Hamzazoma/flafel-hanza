@@ -9,6 +9,7 @@ type OrderBuilderProps = {
   activeCategory: MenuCategory
   locale: Locale
   selectedItems: Record<string, number>
+  availabilityMap: Record<string, boolean>
   onSelectCategory: (category: MenuCategory) => void
   onUpdateQuantity: (itemId: string, quantity: number) => void
 }
@@ -17,6 +18,7 @@ export default function OrderBuilder({
   activeCategory,
   locale,
   selectedItems,
+  availabilityMap,
   onSelectCategory,
   onUpdateQuantity,
 }: OrderBuilderProps) {
@@ -39,11 +41,14 @@ export default function OrderBuilder({
         <div className="grid gap-4">
           {items.map((item) => {
             const quantity = getItemQuantity(selectedItems, item.id)
+            const isAvailable = availabilityMap[item.id] !== false
 
             return (
               <article
                 key={item.id}
-                className="grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 lg:grid-cols-[1fr_auto]"
+                className={`grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 lg:grid-cols-[1fr_auto] ${
+                  isAvailable ? '' : 'opacity-70'
+                }`}
               >
                 <div>
                   <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -53,6 +58,11 @@ export default function OrderBuilder({
                     {item.popular ? (
                       <span className="rounded-full bg-brand-gold px-3 py-1 text-xs font-bold text-brand-ink">
                         {locale === 'ar' ? 'الأكثر طلبا' : 'Best seller'}
+                      </span>
+                    ) : null}
+                    {!isAvailable ? (
+                      <span className="rounded-full bg-brand-clay px-3 py-1 text-xs font-bold text-brand-sand">
+                        {locale === 'ar' ? 'غير متوفر' : 'Unavailable'}
                       </span>
                     ) : null}
                   </div>
@@ -69,12 +79,14 @@ export default function OrderBuilder({
                     label={locale === 'ar' ? 'تقليل' : 'Decrease'}
                     onClick={() => onUpdateQuantity(item.id, quantity - 1)}
                     icon={<Minus className="h-4 w-4" />}
+                    disabled={!isAvailable}
                   />
                   <span className="min-w-10 text-center text-lg font-bold text-brand-sand">{quantity}</span>
                   <QuantityButton
                     label={locale === 'ar' ? 'زيادة' : 'Increase'}
                     onClick={() => onUpdateQuantity(item.id, quantity + 1)}
                     icon={<Plus className="h-4 w-4" />}
+                    disabled={!isAvailable}
                   />
                 </div>
               </article>
@@ -90,15 +102,17 @@ type QuantityButtonProps = {
   label: string
   onClick: () => void
   icon: ReactNode
+  disabled?: boolean
 }
 
-function QuantityButton({ label, onClick, icon }: QuantityButtonProps) {
+function QuantityButton({ label, onClick, icon, disabled = false }: QuantityButtonProps) {
   return (
     <button
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-brand-sand transition hover:border-brand-gold/40 hover:bg-brand-gold/10"
+      disabled={disabled}
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-brand-sand transition hover:border-brand-gold/40 hover:bg-brand-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
     >
       {icon}
     </button>

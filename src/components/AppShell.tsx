@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Globe, ShoppingBag } from 'lucide-react'
+import { Globe, Moon, ShoppingBag, Sun } from 'lucide-react'
 
+import { useTheme } from '@/hooks/useTheme'
 import { siteContent } from '@/data/shop'
 import { cn } from '@/lib/utils'
 import { useShopStore } from '@/store/useShopStore'
@@ -10,13 +11,17 @@ const navCopy = {
   ar: {
     home: 'الموقع التعريفي',
     orders: 'صندوق الطلبات',
+    orderNow: 'اطلب الآن',
     switchLabel: 'English',
+    themeLabel: 'الوضع',
     footer: 'موقعان مترابطان يخدمان نفس المحل: عرض المنيو ثم استقبال الطلب.',
   },
   en: {
     home: 'Showcase Site',
     orders: 'Order Desk',
+    orderNow: 'Order now',
     switchLabel: 'العربية',
+    themeLabel: 'Theme',
     footer: 'Two connected experiences for the same falafel shop: explore the menu, then place an order.',
   },
 }
@@ -26,6 +31,7 @@ export default function AppShell() {
   const toggleLocale = useShopStore((state) => state.toggleLocale)
   const isArabic = locale === 'ar'
   const copy = navCopy[locale]
+  const { isDark, toggleTheme } = useTheme()
 
   useEffect(() => {
     document.documentElement.lang = locale
@@ -47,6 +53,23 @@ export default function AppShell() {
               <NavItem href="/" label={copy.home} />
               <NavItem href="/orders" label={copy.orders} />
             </nav>
+
+            <NavLink
+              to="/orders"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-4 py-2 text-sm font-bold text-brand-ink transition hover:bg-brand-gold-soft"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {copy.orderNow}
+            </NavLink>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-brand-sand transition hover:border-brand-gold/30 hover:bg-brand-gold/10"
+            >
+              {isDark ? <Sun className="h-4 w-4 text-brand-gold" /> : <Moon className="h-4 w-4 text-brand-gold" />}
+              {copy.themeLabel}
+            </button>
 
             <button
               type="button"
