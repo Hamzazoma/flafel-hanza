@@ -1,0 +1,3 @@
+[build]
+  command = "npm --prefix .. run build:admin"
+  publish = "../dist-admin"
