@@ -51,7 +51,6 @@ export const handler: Handler = async (event) => {
     customerName: payload.customerName?.trim() ?? '',
     phone: payload.phone?.trim() ?? '',
     address: payload.address?.trim() ?? '',
-    pickupTime: payload.pickupTime?.trim() ?? '',
     notes: payload.notes?.trim() ?? '',
     serviceType: payload.serviceType === 'delivery' ? 'delivery' : 'pickup',
     selectedItems: payload.selectedItems ?? {},
