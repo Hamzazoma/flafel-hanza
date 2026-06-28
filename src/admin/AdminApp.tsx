@@ -67,6 +67,13 @@ function formatDateTime(value: string) {
   }).format(new Date(value))
 }
 
+function summarizeOrderItems(selectedItems: Record<string, number>) {
+  const lines = buildOrderLines(selectedItems)
+  return lines
+    .map((line) => `${menuItemNameMap.get(line.itemId) ?? line.itemId} x${line.quantity}`)
+    .join(' - ')
+}
+
 function getNextAutoClearAt(lastClearedAt: string | null) {
   if (!lastClearedAt) {
     return null
@@ -401,7 +408,6 @@ export default function AdminApp() {
                               {statusLabels[order.status]}
                             </span>
                           </div>
-                          <p className="mt-2 text-sm text-brand-sand/60">{formatDateTime(order.createdAt)}</p>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
@@ -425,6 +431,11 @@ export default function AdminApp() {
                             </span>
                           ) : null}
                         </div>
+                      </div>
+
+                      <div className="mt-5 rounded-[24px] border border-brand-gold/20 bg-brand-gold/10 px-5 py-4">
+                        <p className="text-sm font-semibold text-brand-gold">الطلب</p>
+                        <p className="mt-2 text-sm leading-7 text-brand-sand">{summarizeOrderItems(order.selectedItems)}</p>
                       </div>
 
                       <div className="mt-5 grid gap-3 text-sm text-brand-sand/75 md:grid-cols-2 xl:grid-cols-4">

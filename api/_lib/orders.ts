@@ -11,7 +11,6 @@ export type StoredOrder = {
   customerName: string
   phone: string
   address: string
-  pickupTime: string
   notes: string
   serviceType: ServiceType
   selectedItems: Record<string, number>
@@ -23,7 +22,6 @@ export type IncomingOrderPayload = {
   customerName: string
   phone: string
   address: string
-  pickupTime: string
   notes: string
   serviceType: ServiceType
   selectedItems: Record<string, number>
@@ -161,7 +159,6 @@ export function createOrder(payload: IncomingOrderPayload): StoredOrder {
     customerName: payload.customerName.trim(),
     phone: payload.phone.trim(),
     address: payload.address.trim(),
-    pickupTime: payload.pickupTime.trim(),
     notes: payload.notes.trim(),
     serviceType: payload.serviceType,
     selectedItems,

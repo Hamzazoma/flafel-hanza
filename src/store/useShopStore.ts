@@ -12,7 +12,6 @@ export type SubmittedOrder = {
   customerName: string
   phone: string
   address: string
-  pickupTime: string
   notes: string
   serviceType: ServiceType
   selectedItems: SelectedItems

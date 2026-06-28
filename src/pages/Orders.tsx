@@ -90,7 +90,6 @@ export default function Orders() {
         customerName,
         phone,
         address,
-        pickupTime: '',
         notes,
         serviceType,
         selectedItems: availableSelectedItems,

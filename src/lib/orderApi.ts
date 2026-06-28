@@ -5,7 +5,6 @@ export type SubmitOrderPayload = {
   customerName: string
   phone: string
   address: string
-  pickupTime: string
   notes: string
   serviceType: ServiceType
   selectedItems: Record<string, number>
