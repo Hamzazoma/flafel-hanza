@@ -31,12 +31,12 @@ export const siteContent = {
     en: 'A clear menu, faster ordering, and a storefront identity that feels familiar.',
   },
   heroDescription: {
-    ar: 'تجربة رقمية لمحل فلافل محلي تعرض السندوتشات والفطائر والصحون والبوكسات، ثم تنقلك مباشرة إلى صندوق الطلبات لتحديد الأصناف ووقت الاستلام أو التوصيل.',
+    ar: 'تجربة رقمية لمحل فلافل محلي تعرض السندوتشات والفطائر والصحون والبوكسات، ثم تنقلك مباشرة إلى صندوق الطلبات لتحديد الأصناف وإرسال الطلب بسهولة.',
     en: 'A digital experience for a local falafel shop that showcases sandwiches, pies, plates, boxes, and drinks before moving customers into a focused ordering desk.',
   },
   orderDescription: {
-    ar: 'اختر أصنافك، حدّد وقت الاستلام أو التوصيل، وأرسل الطلب خلال دقائق.',
-    en: 'Pick your items, choose pickup or delivery time, and send the order within minutes.',
+    ar: 'اختر أصنافك، حدّد نوع الخدمة، وأرسل الطلب خلال دقائق.',
+    en: 'Pick your items, choose the service type, and send the order within minutes.',
   },
 }
 

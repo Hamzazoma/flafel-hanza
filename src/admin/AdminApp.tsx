@@ -55,6 +55,11 @@ function countSelectedItems(selectedItems: Record<string, number>) {
 
 const menuItemNameMap = new Map(menuItems.map((item) => [item.id, item.name.ar]))
 
+function extractFirstUrl(value: string) {
+  const match = value.match(/https?:\/\/\S+/i)
+  return match?.[0] ?? null
+}
+
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('ar', {
     dateStyle: 'medium',
@@ -435,7 +440,14 @@ export default function AdminApp() {
 
                       <div className="mt-5 rounded-[24px] border border-white/10 bg-white/5 px-5 py-4 text-sm text-brand-sand/70">
                         <p>عدد القطع: {countSelectedItems(order.selectedItems)}</p>
-                        <p className="mt-2">العنوان: {order.address || 'لا يوجد عنوان لأن الطلب استلام من المحل'}</p>
+                        <p className="mt-2">
+                          العنوان:{' '}
+                          {order.address ? (
+                            <AddressValue value={order.address} />
+                          ) : (
+                            'لا يوجد عنوان لأن الطلب استلام من المحل'
+                          )}
+                        </p>
                         <p className="mt-2">الملاحظات: {order.notes || 'لا توجد ملاحظات'}</p>
                         <div className="mt-4">
                           <p className="font-semibold text-brand-sand">تفاصيل الطلب:</p>
@@ -624,5 +636,31 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
         <p className="font-medium text-brand-sand">{value}</p>
       </div>
     </div>
+  )
+}
+
+type AddressValueProps = {
+  value: string
+}
+
+function AddressValue({ value }: AddressValueProps) {
+  const url = extractFirstUrl(value)
+
+  if (!url) {
+    return <span>{value}</span>
+  }
+
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span>{value.replace(url, '').trim() || 'تم إرسال الموقع التلقائي'}</span>
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center rounded-full border border-brand-gold/25 bg-brand-gold/10 px-3 py-1 text-xs font-semibold text-brand-gold transition hover:bg-brand-gold/20"
+      >
+        افتح الموقع على Google Maps
+      </a>
+    </span>
   )
 }

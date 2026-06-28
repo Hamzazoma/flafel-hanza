@@ -242,7 +242,7 @@ export default function Home() {
               </h2>
               <p className="mt-3 text-base leading-7 text-brand-sand/70">
                 {isArabic
-                  ? 'الموقع الثاني يركز على اختيار الأصناف والكميات ووقت الاستلام أو التوصيل، ثم يعيدك إلى تجربة المحل بسهولة.'
+                  ? 'الموقع الثاني يركز على اختيار الأصناف والكميات وإرسال الطلب بسرعة، ثم يعيدك إلى تجربة المحل بسهولة.'
                   : 'The second site focuses on item selection, quantity control, and pickup or delivery timing, then loops customers back into the brand.'}
               </p>
             </div>
