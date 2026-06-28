@@ -1,4 +1,4 @@
-import { CircleAlert, Clock4, ReceiptText } from 'lucide-react'
+import { CircleAlert, ReceiptText } from 'lucide-react'
 
 import { menuItems, type Locale, type ServiceType } from '@/data/shop'
 import { buildOrderLines, calculateItemCount, formatPrice, type OrderValidationErrors } from '@/utils/order'
@@ -7,7 +7,6 @@ type OrderSummaryCardProps = {
   locale: Locale
   selectedItems: Record<string, number>
   serviceType: ServiceType
-  pickupTime: string
   totalPrice: number
   errors: OrderValidationErrors
 }
@@ -39,7 +38,6 @@ export default function OrderSummaryCard({
   locale,
   selectedItems,
   serviceType,
-  pickupTime,
   totalPrice,
   errors,
 }: OrderSummaryCardProps) {
@@ -64,10 +62,6 @@ export default function OrderSummaryCard({
       <div className="mb-4 flex flex-wrap gap-3 text-sm text-brand-ink/80">
         <span className="rounded-full border border-brand-ink/10 bg-white/35 px-3 py-1">
           {serviceType === 'pickup' ? text.pickup : text.delivery}
-        </span>
-        <span className="inline-flex items-center gap-2 rounded-full border border-brand-ink/10 bg-white/35 px-3 py-1">
-          <Clock4 className="h-4 w-4" />
-          {pickupTime}
         </span>
       </div>
 

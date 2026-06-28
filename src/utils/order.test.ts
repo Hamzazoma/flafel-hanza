@@ -20,7 +20,6 @@ describe('order helpers', () => {
         customerName: '',
         phone: '',
         address: '',
-        pickupTime: '',
         notes: '',
         serviceType: 'delivery',
       },
@@ -31,6 +30,5 @@ describe('order helpers', () => {
     expect(errors.customerName).toBe('الاسم مطلوب')
     expect(errors.phone).toBe('رقم الجوال مطلوب')
     expect(errors.address).toBe('العنوان مطلوب عند اختيار التوصيل')
-    expect(errors.pickupTime).toBe('وقت التوصيل مطلوب')
   })
 })

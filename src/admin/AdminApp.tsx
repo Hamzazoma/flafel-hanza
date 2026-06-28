@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   CircleAlert,
-  Clock3,
   KeyRound,
   LayoutDashboard,
   LoaderCircle,
@@ -34,7 +33,7 @@ import {
   type MenuAvailabilityMap,
 } from '@/lib/orderApi'
 import { type OrderStatus, type SubmittedOrder } from '@/store/useShopStore'
-import { formatPrice } from '@/utils/order'
+import { buildOrderLines, formatPrice } from '@/utils/order'
 
 const statusLabels: Record<OrderStatus, string> = {
   new: 'جديد',
@@ -53,6 +52,8 @@ type AdminView = 'orders' | 'menu' | 'settings'
 function countSelectedItems(selectedItems: Record<string, number>) {
   return Object.values(selectedItems).reduce((total, quantity) => total + quantity, 0)
 }
+
+const menuItemNameMap = new Map(menuItems.map((item) => [item.id, item.name.ar]))
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('ar', {
@@ -428,7 +429,7 @@ export default function AdminApp() {
                           label="نوع الخدمة"
                           value={order.serviceType === 'delivery' ? 'توصيل' : 'استلام من المحل'}
                         />
-                        <InfoRow icon={<Clock3 className="h-4 w-4" />} label="وقت الطلب" value={order.pickupTime} />
+                        <InfoRow icon={<PackageCheck className="h-4 w-4" />} label="عدد الأصناف" value={countSelectedItems(order.selectedItems).toString()} />
                         <InfoRow icon={<ShoppingBag className="h-4 w-4" />} label="الإجمالي" value={formatPrice(order.totalPrice, 'ar')} />
                       </div>
 
@@ -436,6 +437,20 @@ export default function AdminApp() {
                         <p>عدد القطع: {countSelectedItems(order.selectedItems)}</p>
                         <p className="mt-2">العنوان: {order.address || 'لا يوجد عنوان لأن الطلب استلام من المحل'}</p>
                         <p className="mt-2">الملاحظات: {order.notes || 'لا توجد ملاحظات'}</p>
+                        <div className="mt-4">
+                          <p className="font-semibold text-brand-sand">تفاصيل الطلب:</p>
+                          <div className="mt-3 grid gap-2">
+                            {buildOrderLines(order.selectedItems).map((line) => (
+                              <div
+                                key={`${order.id}-${line.itemId}`}
+                                className="flex items-center justify-between gap-3 rounded-[18px] border border-white/10 bg-black/20 px-4 py-3"
+                              >
+                                <span>{menuItemNameMap.get(line.itemId) ?? line.itemId}</span>
+                                <span className="font-semibold">x{line.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </article>
                   ))}

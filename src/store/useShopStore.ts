@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import { type Locale, type ServiceType } from '@/data/shop'
-import { getDefaultPickupTime, type SelectedItems } from '@/utils/order'
+import { type SelectedItems } from '@/utils/order'
 
 export type OrderStatus = 'new' | 'preparing' | 'ready' | 'out_for_delivery' | 'completed' | 'cancelled'
 
@@ -26,14 +26,13 @@ type ShopState = {
   customerName: string
   phone: string
   address: string
-  pickupTime: string
   notes: string
   serviceType: ServiceType
   lastSubmittedOrder: SubmittedOrder | null
   setLocale: (locale: Locale) => void
   toggleLocale: () => void
   setQuantity: (itemId: string, quantity: number) => void
-  updateField: (field: 'customerName' | 'phone' | 'address' | 'pickupTime' | 'notes', value: string) => void
+  updateField: (field: 'customerName' | 'phone' | 'address' | 'notes', value: string) => void
   setServiceType: (value: ServiceType) => void
   completeSubmittedOrder: (order: SubmittedOrder) => void
   resetOrder: () => void
@@ -44,7 +43,6 @@ const initialOrderState = {
   customerName: '',
   phone: '',
   address: '',
-  pickupTime: getDefaultPickupTime(),
   notes: '',
   serviceType: 'pickup' as ServiceType,
 }
@@ -81,12 +79,10 @@ export const useShopStore = create<ShopState>()(
         set({
           lastSubmittedOrder: order,
           ...initialOrderState,
-          pickupTime: getDefaultPickupTime(),
         }),
       resetOrder: () =>
         set({
           ...initialOrderState,
-          pickupTime: getDefaultPickupTime(),
         }),
     }),
     {

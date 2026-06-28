@@ -6,7 +6,6 @@ export type OrderFormState = {
   customerName: string
   phone: string
   address: string
-  pickupTime: string
   notes: string
   serviceType: ServiceType
 }
@@ -25,12 +24,6 @@ export function formatCalories(calories: number | undefined, locale: Locale) {
   }
 
   return locale === 'ar' ? `${calories} سعرة` : `${calories} kcal`
-}
-
-export function getDefaultPickupTime() {
-  const value = new Date(Date.now() + 30 * 60 * 1000)
-  value.setSeconds(0, 0)
-  return value.toISOString().slice(0, 16)
 }
 
 export function getItemQuantity(selectedItems: SelectedItems, itemId: string) {
@@ -80,10 +73,6 @@ export function validateOrder(form: OrderFormState, selectedItems: SelectedItems
 
   if (!form.phone.trim()) {
     errors.phone = 'رقم الجوال مطلوب'
-  }
-
-  if (!form.pickupTime.trim()) {
-    errors.pickupTime = form.serviceType === 'delivery' ? 'وقت التوصيل مطلوب' : 'وقت الاستلام مطلوب'
   }
 
   if (form.serviceType === 'delivery' && !form.address.trim()) {

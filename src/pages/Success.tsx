@@ -13,7 +13,6 @@ const copy = {
     orders: 'ابدأ طلبا جديدا',
     number: 'رقم الطلب',
     total: 'الإجمالي',
-    time: 'الوقت',
     service: 'الخدمة',
     pickup: 'استلام من المحل',
     delivery: 'توصيل',
@@ -26,7 +25,6 @@ const copy = {
     orders: 'Start a new order',
     number: 'Order number',
     total: 'Total',
-    time: 'Time',
     service: 'Service',
     pickup: 'Pickup',
     delivery: 'Delivery',
@@ -81,7 +79,7 @@ export default function Success() {
         <div className="grid gap-4 md:grid-cols-3">
           <SummaryTile label={text.number} value={lastSubmittedOrder.id} />
           <SummaryTile label={text.total} value={formatPrice(lastSubmittedOrder.totalPrice, locale)} />
-          <SummaryTile label={text.time} value={lastSubmittedOrder.pickupTime} />
+          <SummaryTile label={text.service} value={lastSubmittedOrder.serviceType === 'pickup' ? text.pickup : text.delivery} />
         </div>
 
         <div className="mt-6 rounded-[32px] border border-white/10 bg-brand-ink/70 p-6">

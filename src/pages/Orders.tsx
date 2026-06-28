@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Clock3 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 import OrderBuilder from '@/components/OrderBuilder'
 import OrderFormCard from '@/components/OrderFormCard'
@@ -17,7 +17,6 @@ export default function Orders() {
   const customerName = useShopStore((state) => state.customerName)
   const phone = useShopStore((state) => state.phone)
   const address = useShopStore((state) => state.address)
-  const pickupTime = useShopStore((state) => state.pickupTime)
   const notes = useShopStore((state) => state.notes)
   const serviceType = useShopStore((state) => state.serviceType)
   const setQuantity = useShopStore((state) => state.setQuantity)
@@ -29,9 +28,6 @@ export default function Orders() {
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [availabilityMap, setAvailabilityMap] = useState<MenuAvailabilityMap>(defaultMenuAvailabilityMap)
-  const [addressMode, setAddressMode] = useState<'manual' | 'auto'>('manual')
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
-  const [locationError, setLocationError] = useState('')
   const isArabic = locale === 'ar'
 
   useEffect(() => {
@@ -68,44 +64,12 @@ export default function Orders() {
 
   const totalPrice = useMemo(() => calculateTotal(availableSelectedItems), [availableSelectedItems])
 
-  const handleDetectLocation = () => {
-    setLocationError('')
-
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setLocationError(isArabic ? 'هذا المتصفح لا يدعم تحديد الموقع.' : 'This browser does not support geolocation.')
-      return
-    }
-
-    setIsDetectingLocation(true)
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        const locationValue = isArabic
-          ? `موقعي الحالي: https://maps.google.com/?q=${latitude},${longitude}`
-          : `My current location: https://maps.google.com/?q=${latitude},${longitude}`
-
-        updateField('address', locationValue)
-        setIsDetectingLocation(false)
-      },
-      () => {
-        setLocationError(isArabic ? 'تعذر الوصول إلى موقعك الحالي. فعّل إذن الموقع أو اختر الإدخال اليدوي.' : 'Unable to access your location. Enable location permission or switch to manual entry.')
-        setIsDetectingLocation(false)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      },
-    )
-  }
-
   const handleSubmit = async () => {
     const nextErrors = validateOrder(
       {
         customerName,
         phone,
         address,
-        pickupTime,
         notes,
         serviceType,
       },
@@ -126,7 +90,7 @@ export default function Orders() {
         customerName,
         phone,
         address,
-        pickupTime,
+        pickupTime: '',
         notes,
         serviceType,
         selectedItems: availableSelectedItems,
@@ -156,16 +120,12 @@ export default function Orders() {
               {isArabic ? 'صندوق الطلبات' : 'Order desk'}
             </p>
             <h1 className="mt-3 font-display text-5xl leading-tight text-brand-sand">
-              {isArabic ? 'اختيار سريع للأصناف مع وقت واضح للاستلام' : 'Fast item selection with a clear pickup time'}
+              {isArabic ? 'اختيار سريع للأصناف وإرسال الطلب مباشرة' : 'Fast item selection and direct order submission'}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-brand-sand/70">{siteContent.orderDescription[locale]}</p>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-brand-sand/75">
-              <Clock3 className="h-4 w-4 text-brand-gold" />
-              {isArabic ? 'حدد الوقت ثم أرسل الطلب' : 'Choose the time, then send the order'}
-            </div>
             <Link
               to="/"
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-brand-sand transition hover:border-brand-clay/40 hover:bg-brand-clay/10"
@@ -197,7 +157,6 @@ export default function Orders() {
             locale={locale}
             selectedItems={availableSelectedItems}
             serviceType={serviceType}
-            pickupTime={pickupTime}
             totalPrice={totalPrice}
             errors={errors}
           />
@@ -207,26 +166,12 @@ export default function Orders() {
             customerName={customerName}
             phone={phone}
             address={address}
-            addressMode={addressMode}
-            pickupTime={pickupTime}
             notes={notes}
             errors={errors}
             submitError={submitError}
             isSubmitting={isSubmitting}
-            isDetectingLocation={isDetectingLocation}
-            locationError={locationError}
             onFieldChange={updateField}
-            onServiceTypeChange={(value) => {
-              setServiceType(value)
-              if (value === 'pickup') {
-                setLocationError('')
-              }
-            }}
-            onAddressModeChange={(value) => {
-              setAddressMode(value)
-              setLocationError('')
-            }}
-            onDetectLocation={handleDetectLocation}
+            onServiceTypeChange={setServiceType}
             onSubmit={handleSubmit}
           />
         </div>

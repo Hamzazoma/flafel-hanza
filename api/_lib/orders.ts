@@ -141,10 +141,6 @@ export function validateIncomingOrder(payload: Partial<IncomingOrderPayload>) {
     return 'رقم الجوال مطلوب'
   }
 
-  if (!payload.pickupTime?.trim()) {
-    return 'وقت الطلب مطلوب'
-  }
-
   if (payload.serviceType === 'delivery' && !payload.address?.trim()) {
     return 'العنوان مطلوب عند اختيار التوصيل'
   }
